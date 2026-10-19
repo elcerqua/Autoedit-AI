@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101b2d" />
+    <meta name="description" content="Montaggio video editoriale assistito da LLM, con revisione umana prima del rendering." />
+    <title>Auto Cut AI · Studio editoriale</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20260808-studio" />
+    <script src="/static/app.js?v=20260808-studio" defer></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <main id="app" class="app-shell" data-stage="setup">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Auto Cut AI, torna alla configurazione">
+          <span class="brand-mark" aria-hidden="true">
+            <i></i><i></i><i></i>
+          </span>
+          <span><strong>Auto Cut</strong><small>AI Studio</small></span>
+        </a>
+        <div class="human-gate-badge">
+          <span class="status-dot" aria-hidden="true"></span>
+          Rendering solo dopo il Via libera
+        </div>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Editing narrativo · Italiano</p>
+          <h1 id="page-title">Dalle clip grezze a una storia che scorre.</h1>
+        </div>
+        <p class="hero-copy">Carica le riprese, lascia che l’LLM costruisca il racconto e controlla ogni taglio prima della composizione finale.</p>
+      </section>
+
+      <nav class="workflow-rail" aria-label="Fasi del montaggio">
+        <div class="workflow-step active" data-workflow-step="setup"><span>01</span><strong>Imposta</strong><small>Clip e stile</small></div>
+        <div class="workflow-line" aria-hidden="true"></div>
+        <div class="workflow-step" data-workflow-step="analysis"><span>02</span><strong>Analizza</strong><small>Trascrizione e proposta</small></div>
+        <div class="workflow-line" aria-hidden="true"></div>
+        <div class="workflow-step" data-workflow-step="review"><span>03</span><strong>Rivedi</strong><small>Controllo umano</small></div>
+        <div class="workflow-line" aria-hidden="true"></div>
+        <div class="workflow-step" data-workflow-step="export"><span>04</span><strong>Esporta</strong><small>Video finale</small></div>
+      </nav>
+
+      <section id="setup-view" class="setup-grid">
+        <section class="tool-panel primary-panel" aria-labelledby="content-heading">
+          <div class="panel-heading">
+            <div class="section-index">01</div>
+            <div>
+              <p class="eyebrow">Materiale</p>
+              <h2 id="content-heading">Contenuto e direzione</h2>
+              <p>Dai all’editor AI il materiale e il contesto necessari.</p>
+            </div>
+          </div>
+
+          <label class="upload-dropzone field">
+            <input id="clips-input" type="file" accept="video/*" multiple />
+            <span class="upload-icon" aria-hidden="true">＋</span>
+            <span class="upload-title">Scegli le clip video</span>
+            <small>Uno o più file · caricamento progressivo a blocchi</small>
+          </label>
+          <div id="clip-list" class="clip-list" aria-live="polite"></div>
+
+          <label class="field">
+            <span>Brief editoriale</span>
+            <textarea id="brief-input" rows="6" placeholder="Racconta l’obiettivo, il pubblico e i passaggi da preservare…"></textarea>
+            <small>Più il brief è concreto, più la proposta sarà fedele alla tua intenzione.</small>
+          </label>
+
+          <details class="prompt-examples">
+            <summary><span>Esempi di prompt efficaci</span><small>Apri la raccolta</small></summary>
+            <div class="prompt-example-list">
+              <article class="prompt-example">
+                <p>Fai un montaggio piu asciutto, evitando ripetizioni, esitazioni e giri di parole. Mantieni solo i passaggi necessari alla comprensione.</p>
+                <button class="copy-prompt-button" type="button" data-prompt="Fai un montaggio piu asciutto, evitando ripetizioni, esitazioni e giri di parole. Mantieni solo i passaggi necessari alla comprensione.">Usa</button>
+              </article>
+              <article class="prompt-example">
+                <p>Dai priorita ai dati, ai nomi e ai collegamenti. Taglia commenti ridondanti e frasi che ripetono lo stesso concetto.</p>
+                <button class="copy-prompt-button" type="button" data-prompt="Dai priorita ai dati, ai nomi e ai collegamenti. Taglia commenti ridondanti e frasi che ripetono lo stesso concetto.">Usa</button>
+              </article>
+              <article class="prompt-example">
+                <p>Crea una narrazione cronologica: prima contesto, poi norma, poi proprietà, poi dati. Evita aperture senza soggetto esplicito.</p>
+                <button class="copy-prompt-button" type="button" data-prompt="Crea una narrazione cronologica: prima contesto, poi norma, poi proprietà, poi dati. Evita aperture senza soggetto esplicito.">Usa</button>
+              </article>
+              <article class="prompt-example">
+                <p>Mantieni un ritmo naturale ma serrato, tagliando autoriparazioni verbali e filler interni quando esiste una formulazione finale più chiara.</p>
+                <button class="copy-prompt-button" type="button" data-prompt="Mantieni un ritmo naturale ma serrato, tagliando autoriparazioni verbali e filler interni quando esiste una formulazione finale più chiara.">Usa</button>
+              </article>
+              <article class="prompt-example">
+                <p>Prepara un video social informativo: apertura chiara, passaggi logici completi, niente frasi tronche, finale con il punto principale e zoom creativo.</p>
+                <button class="copy-prompt-button" type="button" data-prompt="Prepara un video social informativo: apertura chiara, passaggi logici completi, niente frasi tronche, finale con il punto principale e zoom creativo.">Usa</button>
+              </article>
+            </div>
+          </details>
+
+          <label class="field">
+            <span>Modello Ollama</span>
+            <select id="model-select" aria-describedby="model-help"></select>
+            <small id="model-help">Il modello lavora localmente e produce una NarrativeMap validata.</small>
+          </label>
+          <div id="model-error" class="notice error hidden" role="status"></div>
+        </section>
+
+        <section class="tool-panel settings-panel" aria-labelledby="settings-heading">
+          <div class="panel-heading compact">
+            <div class="section-index">02</div>
+            <div>
+              <p class="eyebrow">Look & feel</p>
+              <h2 id="settings-heading">Impostazioni di montaggio</h2>
+              <p>Definisci ritmo, formato e finitura tecnica.</p>
+            </div>
+          </div>
+
+          <label class="field range-field">
+            <span>Sintesi <strong id="synthesis-label" class="value-pill">2</strong></span>
+            <input id="synthesis-input" type="range" min="0" max="5" value="2" />
+            <span class="range-legend"><small>Integrale</small><small>Essenziale</small></span>
+          </label>
+
+          <label class="field">
+            <span>Durata finale target <small class="optional">facoltativa</small></span>
+            <div class="input-with-suffix">
+              <input id="target-duration-minutes-input" type="number" min="0" step="0.1" placeholder="8.5" />
+              <span>min</span>
+            </div>
+          </label>
+
+          <div class="two-columns">
+            <label class="field">
+              <span>Transizione</span>
+              <select id="transition-select"></select>
+            </label>
+            <label class="field">
+              <span>Durata</span>
+              <div class="input-with-suffix">
+                <input id="transition-duration-input" type="number" min="0" value="200" />
+                <span>ms</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="two-columns">
+            <label class="field">
+              <span>Formato</span>
+              <select id="aspect-select"></select>
+            </label>
+            <label class="field">
+              <span>Risoluzione</span>
+              <input id="resolution-input" placeholder="Sorgente" />
+            </label>
+          </div>
+
+          <div class="group-label"><span>Finitura</span><small>Attiva solo ciò che serve</small></div>
+          <div class="switch-grid">
+            <label><input id="normalize-audio-input" type="checkbox" checked /><span><strong>Audio uniforme</strong><small>Normalizzazione LUFS</small></span></label>
+            <label><input id="remove-silence-input" type="checkbox" checked /><span><strong>Rimuovi silenzi</strong><small>Pause non narrative</small></span></label>
+            <label><input id="creative-zoom-input" type="checkbox" /><span><strong>Zoom creativo</strong><small>Enfasi sui passaggi chiave</small></span></label>
+            <label><input id="transition-sounds-input" type="checkbox" /><span><strong>Aggiungi suoni</strong><small>Effetti sugli stacchi</small></span></label>
+            <label><input id="subtitles-input" type="checkbox" /><span><strong>Sottotitoli automatici</strong><small>Testo impresso nel video</small></span></label>
+            <label><input id="music-input" type="checkbox" /><span><strong>Musica</strong><small>Mix con ducking</small></span></label>
+          </div>
+
+          <section id="subtitle-options-panel" class="nested-panel hidden" aria-label="Opzioni sottotitoli">
+            <div class="two-columns">
+              <label class="field">
+                <span>Posizione sottotitoli</span>
+                <select id="subtitle-position-select">
+                  <option value="bottom">Basso</option>
+                  <option value="center">Centro</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Stile sottotitoli</span>
+                <select id="subtitle-style-select"></select>
+              </label>
+            </div>
+            <div id="subtitle-style-preview-list" class="subtitle-style-preview-list"></div>
+          </section>
+
+          <label id="transition-sound-field" class="field">
+            <span>Effetto sonoro transizioni</span>
+            <select id="transition-sound-select"></select>
+          </label>
+          <button id="transition-sound-play-button" class="secondary-action compact-action" type="button" disabled>▶ Ascolta effetto</button>
+          <audio id="transition-sound-preview" preload="none"></audio>
+
+          <label id="music-prompt-field" class="field hidden">
+            <span>Direzione musicale</span>
+            <input id="music-prompt-input" placeholder="Atmosfera, ritmo, strumenti…" />
+          </label>
+
+          <button id="analyze-button" class="primary-action" type="button">
+            <span>Analizza video</span><span aria-hidden="true">→</span>
+          </button>
+          <p class="action-note">Nessun rendering partirà senza la tua approvazione.</p>
+        </section>
+      </section>
+
+      <section id="pipeline-view" class="hidden" aria-label="Stato della pipeline">
+        <section class="status-band">
+          <div class="status-copy">
+            <span class="processing-orb" aria-hidden="true"></span>
+            <div>
+              <p class="eyebrow">Pipeline in tempo reale</p>
+              <h2 id="stage-label" aria-live="polite">In attesa</h2>
+              <p id="stage-message" aria-live="polite"></p>
+            </div>
+          </div>
+          <div class="timer-grid" aria-label="Tempi di elaborazione">
+            <div><span>Tempo totale</span><strong id="elapsed-label">0:00</strong></div>
+            <div><span>Fase corrente</span><strong id="stage-elapsed-label">0:00</strong></div>
+          </div>
+          <div id="event-log" class="event-log" aria-live="polite" aria-label="Registro avanzamento"></div>
+        </section>
+      </section>
+
+      <section id="review-view" class="review-layout hidden">
+        <section class="review-main surface" aria-labelledby="review-heading">
+          <div class="review-kicker"><span class="status-dot success" aria-hidden="true"></span>Analisi completata</div>
+          <p class="eyebrow">Proposta editoriale</p>
+          <h2 id="review-heading"><span id="editorial-strategy"></span></h2>
+          <p id="estimated-duration" class="duration-summary"></p>
+          <div id="proposal-review" class="review-note hidden"></div>
+          <div id="proposal-variant-list" class="proposal-variant-list"></div>
+          <div id="proposal-comparison" class="proposal-comparison"></div>
+          <section id="proposal-text-editor" class="proposal-text-editor"></section>
+        </section>
+
+        <aside class="review-side">
+          <div class="approval-card">
+            <p class="eyebrow">Controllo finale</p>
+            <h3>Pronto per il tuo giudizio</h3>
+            <p>Scegli la variante, correggi il testo e avvia la composizione solo quando sei soddisfatto.</p>
+            <button id="approve-button" class="primary-action" type="button"><span>Via libera</span><span aria-hidden="true">→</span></button>
+          </div>
+
+          <div class="side-section">
+            <h3>Ordine narrativo</h3>
+            <div id="narrative-order"></div>
+          </div>
+
+          <div class="side-section">
+            <h3>Ricalcola proposta</h3>
+            <label class="field range-field">
+              <span>Sintesi <strong id="review-synthesis-label" class="value-pill">2</strong></span>
+              <input id="review-synthesis-input" type="range" min="0" max="5" value="2" />
+            </label>
+            <label class="field">
+              <span>Durata target</span>
+              <div class="input-with-suffix">
+                <input id="review-target-duration-minutes-input" type="number" min="0" step="0.1" placeholder="8.5" />
+                <span>min</span>
+              </div>
+            </label>
+            <button id="recalculate-button" class="secondary-action" type="button">Ricalcola proposta</button>
+            <button id="save-proposal-texts-button" class="ghost-action" type="button" disabled>Salva correzioni</button>
+          </div>
+
+          <details class="technical-details side-section">
+            <summary>Opzioni tecniche</summary>
+            <pre id="options-preview"></pre>
+          </details>
+        </aside>
+      </section>
+
+      <section id="final-view" class="final-band hidden">
+        <div class="status-copy">
+          <span class="processing-orb" aria-hidden="true"></span>
+          <div>
+            <p class="eyebrow">Output</p>
+            <h2 id="final-title">Rendering in corso</h2>
+          </div>
+        </div>
+        <a id="download-link" class="download-link hidden" href="#">Scarica MP4 <span aria-hidden="true">↓</span></a>
+      </section>
+
+      <div id="app-error" class="notice error app-toast hidden" role="alert"></div>
+      <footer>Auto Cut AI <span aria-hidden="true">·</span> L’LLM propone, tu decidi.</footer>
+    </main>
+  </body>
+</html>
