@@ -191,3 +191,7 @@ Both `tests/fixtures/1.mp4` and `tests/fixtures/2.mp4` are included. Real render
 - Estimated duration can differ from the rendered duration because of transitions and protective boundary extensions.
 - The local application has no authentication and uses a simple background runner. Its cleanup policy assumes one active workflow; it is not a concurrent multi-user service.
 - Editing proposal text does not synthesize replacement speech. Final video uses the source recordings.
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE) (`GPL-3.0-only`). See the full license text in [LICENSE](LICENSE).

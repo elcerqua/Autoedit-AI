@@ -191,3 +191,7 @@ Sono inclusi entrambi i video `tests/fixtures/1.mp4` e `tests/fixtures/2.mp4`. I
 - La durata stimata può differire da quella renderizzata per le transizioni e i margini protettivi dei tagli.
 - L'applicazione locale non include autenticazione e usa un esecutore semplice in background. La pulizia dei dati presuppone un flusso di lavoro attivo alla volta; non è un servizio multiutente concorrente.
 - La modifica dei testi della proposta non genera una nuova voce. Il video finale usa le registrazioni originali.
+
+## Licenza
+
+Questo progetto è distribuito con licenza [GNU General Public License v3.0](LICENSE) (`GPL-3.0-only`). Il testo completo della licenza è disponibile nel file [LICENSE](LICENSE).

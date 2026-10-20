@@ -3,6 +3,7 @@ name = "autocut-ai"
 version = "0.1.0"
 description = "Auto Cut AI, LLM-assisted video editing for spoken informational clips."
 requires-python = ">=3.11"
+license = { file = "LICENSE" }
 dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.27",
